@@ -1,0 +1,101 @@
+/* =========================================================
+   R-TIM — intro animacija (sportski točak)
+   Prikazuje se samo kada <html> ima klasu "intro-on"
+   (postavlja je mali inline skript u <head>).
+   ========================================================= */
+
+.intro { display: none; }
+
+.intro-on .intro {
+  display: block;
+  position: fixed; inset: 0; z-index: 1000;
+  background: #080A0C;
+  overflow: hidden;
+  contain: strict;
+}
+.intro-lock, .intro-lock body { overflow: hidden; }
+
+/* Scena: cela fotografija (1672×941), glavčina je na 53.86% / 50.87%.
+   Desktop: pokriva ekran (cover) sa glavčinom u centru.
+   Uspravni ekran: točak i guma staju u širinu, ivice se blago gase u crno. */
+.intro-stage {
+  position: absolute; left: 50%; top: 50%;
+  width: max(54.2vw, 90.35vh);   /* 50% veličine: točak u velikom crnom prostoru */
+  aspect-ratio: 1672 / 941;
+  transform: translate(-53.858%, -50.871%) scale(var(--intro-zoom, 1));
+  transform-origin: 53.858% 50.871%;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+@media (max-aspect-ratio: 5/4) {
+  .intro-stage { width: min(135vw, 85vh); left: calc(50% + min(4vw, 28px)); }
+  .intro-bg {
+    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 54%, #000 55%, rgba(0,0,0,.55) 78%, transparent 100%);
+            mask-image: radial-gradient(ellipse 50% 50% at 50% 54%, #000 55%, rgba(0,0,0,.55) 78%, transparent 100%);
+  }
+}
+.intro-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  /* meko kružno gašenje: ivice fotografije se utapaju u crnu pozadinu */
+  -webkit-mask-image: radial-gradient(ellipse 50% 56% at 50% 54%, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%);
+          mask-image: radial-gradient(ellipse 50% 56% at 50% 54%, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%);
+}
+
+/* Felna: kvadrat 500×500 izvornih px oko glavčine, „ispravljen“ iz perspektive.
+   scaleX vraća krug u elipsu; maska (elipsa unutrašnjeg oboda) seče sve van felne,
+   a slike unutra se okreću oko glavčine. */
+.intro-wheel {
+  position: absolute;
+  left: 38.9055%; top: 24.3039%;
+  width: 29.9043%; aspect-ratio: 1;
+  transform: scaleX(.59705);
+  -webkit-mask-image: radial-gradient(ellipse 45.39% 45.39% at 56.13% 50.88%, #000 79%, transparent 86%);
+          mask-image: radial-gradient(ellipse 45.39% 45.39% at 56.13% 50.88%, #000 79%, transparent 86%);
+}
+.intro-wheel img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  transform: rotate(var(--intro-a, 0deg));
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+.intro-wheel .intro-caliper { transform: none; opacity: 0; }
+
+.intro-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.intro-flash {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background:
+    radial-gradient(circle at var(--fx, 50%) var(--fy, 47%), rgba(255, 252, 240, 1) 0%, rgba(255, 238, 180, .85) 4.5%, rgba(255, 214, 40, .3) 11%, rgba(255, 212, 0, 0) 22%),
+    radial-gradient(ellipse 38% 3.5% at var(--fx, 50%) var(--fy, 47%), rgba(255, 245, 210, .9), rgba(255, 212, 0, 0) 70%);
+  transform-origin: var(--fx, 50%) var(--fy, 47%);
+}
+
+.intro-skip {
+  position: absolute; right: max(16px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 2;
+  min-height: 44px; padding: 10px 18px;
+  background: rgba(8, 10, 12, .5); color: #A3AAB0;
+  border: 1px solid #343A3F; border-radius: 2px;
+  font: 600 .88rem/1 "Barlow Condensed", "Arial Narrow", sans-serif;
+  letter-spacing: .2em; text-transform: uppercase;
+  cursor: pointer;
+  transition: color .2s, border-color .2s;
+}
+.intro-skip:hover { color: #FAFB16; border-color: #FAFB16; }
+.intro-skip:focus-visible { outline: 3px solid #FAFB16; outline-offset: 3px; }
+
+/* Izlaz: ceo sloj nestaje, početna se otkriva */
+.intro.is-leaving { transition: opacity .42s cubic-bezier(.4, 0, .2, 1); opacity: 0; pointer-events: none; }
+.intro.is-leaving.is-fast { transition-duration: .22s; }
+
+/* Početna posle introa: hero sadržaj lagano ulazi */
+.intro-reveal .hero-content { animation: rtimHeroIn .9s cubic-bezier(.2, .7, .2, 1) both; }
+.intro-reveal .hero-media { animation: rtimHeroBg 1.4s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes rtimHeroIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes rtimHeroBg { from { transform: scale(1.06); } to { transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-on .intro { display: none; }
+  .intro-lock, .intro-lock body { overflow: visible; }
+  .intro-reveal .hero-content, .intro-reveal .hero-media { animation: none; }
+}
